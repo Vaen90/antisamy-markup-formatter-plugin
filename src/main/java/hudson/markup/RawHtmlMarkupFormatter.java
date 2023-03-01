@@ -31,18 +31,21 @@ public class RawHtmlMarkupFormatter extends MarkupFormatter {
 
     @Override
     public void translate(String markup, Writer output) throws IOException {
+        if(markup == null){
+            return;
+        }
         if (markup.matches("(<script>|document\\.|iframe|http\\:\\\\)") || (markup.matches("http(s)\\:\\\\") && !markup.matches("http(s)\\:\\\\.*\\.graebert\\.com"))){
             HtmlStreamRenderer renderer = HtmlStreamRenderer.create(
-                            output,
-                            // Receives notifications on a failure to write to the output.
-                            Handler.PROPAGATE, // System.out suppresses IOExceptions
-                            // Our HTML parser is very lenient, but this receives notifications on
-                            // truly bizarre inputs.
-                            x -> {
-                                throw new Error(x);
-                            }
-                    );
-                    HtmlSanitizer.sanitize(markup, BasicPolicy.POLICY_DEFINITION.apply(renderer));
+                        output,
+                        // Receives notifications on a failure to write to the output.
+                        Handler.PROPAGATE, // System.out suppresses IOExceptions
+                        // Our HTML parser is very lenient, but this receives notifications on
+                        // truly bizarre inputs.
+                        x -> {
+                            throw new Error(x);
+                        }
+                );
+                HtmlSanitizer.sanitize(markup, BasicPolicy.POLICY_DEFINITION.apply(renderer));
         }else{
             output.write(markup.replaceAll("\'","\""));
         }
