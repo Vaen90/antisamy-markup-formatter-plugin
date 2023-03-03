@@ -25,7 +25,7 @@
   </scm>
 
     <properties>
-        <changelist>2.7-CUSTOM2</changelist>
+        <changelist>155.v795fb_custom</changelist>
         <gitHubRepo>jenkinsci/antisamy-markup-formatter-plugin</gitHubRepo>
         <jenkins.version>2.277.4</jenkins.version>
         <hpi.compatibleSinceVersion>2.0</hpi.compatibleSinceVersion>
