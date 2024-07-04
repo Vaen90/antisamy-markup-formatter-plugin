@@ -1,6 +1,7 @@
 package hudson.markup;
 
 import hudson.Extension;
+import hudson.model.Descriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.owasp.html.Handler;
 import org.owasp.html.HtmlSanitizer;
@@ -20,6 +21,14 @@ public class RawHtmlMarkupFormatter extends MarkupFormatter {
 
     final boolean disableSyntaxHighlighting;
 
+    @Extension
+    public static class DescriptorImpl extends MarkupFormatterDescriptor {
+        @Override
+        public String getDisplayName() {
+            return "Safe HTML";
+        }
+    }
+
     @DataBoundConstructor
     public RawHtmlMarkupFormatter(final boolean disableSyntaxHighlighting) {
         this.disableSyntaxHighlighting = disableSyntaxHighlighting;
@@ -31,6 +40,9 @@ public class RawHtmlMarkupFormatter extends MarkupFormatter {
 
     @Override
     public void translate(String markup, Writer output) throws IOException {
+        if(markup == null) {
+            return;
+        }
         if (markup.matches("(<script>|document\\.|iframe|http\\:\\\\)") || (markup.matches("http(s)\\:\\\\") && !markup.matches("http(s)\\:\\\\.*\\.graebert\\.com"))){
             HtmlStreamRenderer renderer = HtmlStreamRenderer.create(
                             output,
@@ -54,14 +66,6 @@ public class RawHtmlMarkupFormatter extends MarkupFormatter {
 
     public String getCodeMirrorConfig() {
         return "\"mode\":\"text/html\"";
-    }
-
-    @Extension
-    public static class DescriptorImpl extends MarkupFormatterDescriptor {
-        @Override
-        public String getDisplayName() {
-            return "Safe HTML";
-        }
     }
 
     public static final MarkupFormatter INSTANCE = new RawHtmlMarkupFormatter(false);
