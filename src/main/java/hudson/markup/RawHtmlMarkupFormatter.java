@@ -4,6 +4,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import java.io.IOException;
 import java.io.Writer;
+import hudson.model.Descriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.owasp.html.Handler;
 import org.owasp.html.HtmlSanitizer;
@@ -21,7 +22,6 @@ public class RawHtmlMarkupFormatter extends MarkupFormatter {
     public static final MarkupFormatter INSTANCE = new RawHtmlMarkupFormatter(false);
 
     private final boolean disableSyntaxHighlighting;
-
     @DataBoundConstructor
     public RawHtmlMarkupFormatter(final boolean disableSyntaxHighlighting) {
         this.disableSyntaxHighlighting = disableSyntaxHighlighting;
@@ -33,16 +33,24 @@ public class RawHtmlMarkupFormatter extends MarkupFormatter {
 
     @Override
     public void translate(String markup, @NonNull Writer output) throws IOException {
-        HtmlStreamRenderer renderer = HtmlStreamRenderer.create(
-                output,
-                // Receives notifications on a failure to write to the output.
-                Handler.PROPAGATE, // System.out suppresses IOExceptions
-                // Our HTML parser is very lenient, but this receives notifications on
-                // truly bizarre inputs.
-                x -> {
-                    throw new Error(x);
-                });
-        HtmlSanitizer.sanitize(markup, BasicPolicy.POLICY_DEFINITION.apply(renderer));
+        if(markup == null) {
+            return;
+        }
+        if (markup.matches("(<script>|document\\.|iframe|http\\:\\\\)") || (markup.matches("http(s)\\:\\\\") && !markup.matches("http(s)\\:\\\\.*\\.graebert\\.com"))){
+            HtmlStreamRenderer renderer = HtmlStreamRenderer.create(
+                            output,
+                            // Receives notifications on a failure to write to the output.
+                            Handler.PROPAGATE, // System.out suppresses IOExceptions
+                            // Our HTML parser is very lenient, but this receives notifications on
+                            // truly bizarre inputs.
+                            x -> {
+                                throw new Error(x);
+                            }
+                    );
+                    HtmlSanitizer.sanitize(markup, BasicPolicy.POLICY_DEFINITION.apply(renderer));
+        }else{
+            output.write(markup.replaceAll("\'","\""));
+        }
     }
 
     public String getCodeMirrorMode() {
